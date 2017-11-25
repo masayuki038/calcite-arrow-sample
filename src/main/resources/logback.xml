@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration debug="true">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder>
+            <pattern>test %-5r %d{yyyy-MM-dd HH:mm:ss} [%t] %highlight(%-5le) %cyan(%-40.40lo{36}) - %green(%msg) %n</pattern>
+        </encoder>
+        <withJasi>true</withJasi>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

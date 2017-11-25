@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "defaultSchema": "SAMPLES",
+  "schemas": [
+    {
+      "name": "SAMPLES",
+      "type": "custom",
+      "factory": "net.wrap_trap.calcite_arrow_sample.ArrowSchemaFactory",
+      "operand": {
+        "directory": "samples"
+      }
+    }
+  ]
+}
