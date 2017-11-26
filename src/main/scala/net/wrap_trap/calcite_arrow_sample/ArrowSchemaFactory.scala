@@ -13,7 +13,6 @@ class ArrowSchemaFactory extends SchemaFactory {
   val logger = LoggerFactory.getLogger(classOf[ArrowSchemaFactory])
 
   override def create(parentSchema: SchemaPlus, name: String, operand: java.util.Map[String, Object]): Schema = {
-    logger.error("create")
     val directory = operand.get("directory").asInstanceOf[String]
     val base = operand.get(ModelHandler.ExtraOperand.BASE_DIRECTORY.camelName).asInstanceOf[File]
     var directoryFile = new File(directory)

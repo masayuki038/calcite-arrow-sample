@@ -12,7 +12,7 @@ import org.apache.calcite.schema.ScannableTable
 /**
   * Created by masayuki on 2017/11/18.
   */
-class ArrowScannableTable(val vectorSchemaRoot: VectorSchemaRoot, val tProtoRowType: RelProtoDataType)
+class ArrowScannableTable(val vectorSchemaRoots: Array[VectorSchemaRoot], val tProtoRowType: RelProtoDataType)
   extends AbstractTable with ScannableTable {
 
   override def toString(): String = {
@@ -23,13 +23,13 @@ class ArrowScannableTable(val vectorSchemaRoot: VectorSchemaRoot, val tProtoRowT
     if (this.tProtoRowType != null) {
       return this.tProtoRowType.apply(typeFactory)
     }
-    ArrowEnumerator.deduceRowType(this.vectorSchemaRoot, typeFactory.asInstanceOf[JavaTypeFactory])
+    ArrowEnumerator.deduceRowType(this.vectorSchemaRoots(0), typeFactory.asInstanceOf[JavaTypeFactory])
   }
 
   override def scan(root: DataContext): Enumerable[Array[Object]] = {
     new AbstractEnumerable[Array[Object]] {
       override def enumerator(): Enumerator[Array[Object]] = {
-        new ArrowEnumerator(vectorSchemaRoot)
+        new ArrowEnumerator(vectorSchemaRoots)
       }
     }
   }

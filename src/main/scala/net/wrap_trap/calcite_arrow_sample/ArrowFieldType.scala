@@ -13,7 +13,7 @@ case object ArrowFieldType {
   val map = List(
     (classOf[ArrowType.Utf8], STRING),
     (classOf[ArrowType.Bool], BOOLEAN),
-    (classOf[ArrowType.Int], INT),
+    (classOf[ArrowType.Int], LONG),
     (classOf[ArrowType.FloatingPoint], FLOAT),
     (classOf[ArrowType.Date], DATE),
     (classOf[ArrowType.Time], TIME),
@@ -24,7 +24,7 @@ case object ArrowFieldType {
     val clazz = arrowFieldType match {
       case STRING => classOf[String]
       case BOOLEAN => Primitive.BOOLEAN.boxClass
-      case INT => Primitive.INT.boxClass
+      case LONG => Primitive.LONG.boxClass
       case FLOAT => Primitive.FLOAT.boxClass
       case DATE => classOf[java.sql.Date]
       case TIME => classOf[java.sql.Time]
@@ -39,7 +39,7 @@ case object ArrowFieldType {
 }
 case object STRING extends ArrowFieldType
 case object BOOLEAN extends ArrowFieldType
-case object INT extends ArrowFieldType
+case object LONG extends ArrowFieldType
 case object FLOAT extends ArrowFieldType
 case object DATE extends ArrowFieldType
 case object TIME extends ArrowFieldType

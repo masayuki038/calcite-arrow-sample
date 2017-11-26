@@ -4,6 +4,8 @@ import java.io.File
 import java.nio.file.{FileSystems, Files}
 import java.util
 
+import collection.JavaConverters._
+
 import net.wrap_trap.calcite_arrow_sample.Helper._
 import org.apache.arrow.memory.{BufferAllocator, RootAllocator}
 import org.apache.arrow.vector.VectorSchemaRoot
@@ -18,6 +20,7 @@ import org.slf4j.LoggerFactory
   */
 class ArrowSchema(val directory: File) extends AbstractSchema {
   val logger = LoggerFactory.getLogger(classOf[ArrowSchema])
+  var tableMap: Option[util.Map[String, Table]] = None
 
   private def trim(s: String, suffix: String): String = {
     val trimmed = trimOrNull(s, suffix)
@@ -35,24 +38,29 @@ class ArrowSchema(val directory: File) extends AbstractSchema {
   }
 
   override def getTableMap: util.Map[String, Table] = {
-    val allocator = new RootAllocator(Long.MaxValue)
-    val map = new util.HashMap[String, Table]
-    logger.warn(directory.getAbsolutePath)
-    directory.listFiles((dir: File, name: String) => name.endsWith(".arrow"))
-      .foreach { f =>
-        map.put(
-          trim(f.getName(), ".arrow").toUpperCase,
-          new ArrowScannableTable(load(f.getAbsolutePath, allocator), null))
-      }
-    map
+    if (tableMap.isEmpty) {
+      val allocator = new RootAllocator(Long.MaxValue)
+      val map = new util.HashMap[String, Table]
+      directory.listFiles((dir: File, name: String) => name.endsWith(".arrow"))
+        .foreach { f =>
+          map.put(
+            trim(f.getName(), ".arrow").toUpperCase,
+            new ArrowScannableTable(load(f.getAbsolutePath, allocator), null))
+        }
+      tableMap = Option(map)
+    }
+    tableMap.get
   }
 
-  def load(path: String, allocator: BufferAllocator): VectorSchemaRoot = {
+  def load(path: String, allocator: BufferAllocator): Array[VectorSchemaRoot] = {
     val byteArray = Files.readAllBytes(FileSystems.getDefault().getPath(path))
     val channel = new SeekableReadChannel(new ByteArrayReadableSeekableByteChannel(byteArray))
-    using(new ArrowFileReader(channel, allocator)) { reader =>
-      reader.getRecordBlocks().forEach(block => reader.loadRecordBatch(block))
+    val reader = new ArrowFileReader(channel, allocator)
+    reader.getRecordBlocks().asScala.map{ block =>
+      if (!reader.loadRecordBatch(block)) {
+        throw new IllegalStateException("Failed to load RecordBatch")
+      }
       reader.getVectorSchemaRoot
-    }
+    }.toArray
   }
 }
