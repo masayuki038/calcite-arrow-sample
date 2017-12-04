@@ -13,6 +13,12 @@ import org.apache.calcite.util.Pair
 /**
   * Created by masayuki on 2017/11/18.
   */
+object EnumeratorUtils {
+  def identityList(n: Int): Array[Int] = {
+    (0 to n-1).toArray
+  }
+}
+
 object ArrowEnumerator {
   def deduceRowType(vectorSchemaRoot: VectorSchemaRoot, typeFactory: JavaTypeFactory): RelDataType = {
     val arrowTypes = vectorSchemaRoot.getFieldVectors.asScala.map(fieldVector => {
@@ -23,11 +29,15 @@ object ArrowEnumerator {
   }
 }
 
-class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot]) extends Enumerator[Array[Object]] {
+class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[Int]) extends Enumerator[Array[Object]] {
   val logger = LoggerFactory.getLogger(classOf[ArrowEnumerator])
 
   var index = 0
   var currentPos = 0
+
+  def this(vectorSchemaRoots: Array[VectorSchemaRoot]) = {
+    this(vectorSchemaRoots, EnumeratorUtils.identityList(vectorSchemaRoots(0).getFieldVectors.size))
+  }
 
 //  logger.error("vectorSchemaRoots.length:" + vectorSchemaRoots.length)
 //  vectorSchemaRoots.foreach(v => {
@@ -49,13 +59,15 @@ class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot]) extends Enumer
   }
 
   override def current(): Array[Object] = {
-    vectorSchemaRoots(this.index).getFieldVectors.asScala.map { fieldVector =>
+    fields.map { fieldIndex =>
+      logger.error("fieldIndex: " + fieldIndex)
+      val fieldVector = vectorSchemaRoots(this.index).getFieldVectors.get(fieldIndex)
       if (fieldVector.getAccessor.getValueCount <= currentPos) {
         "NULL"
       } else {
         fieldVector.getAccessor.getObject(currentPos)
       }
-    }.toArray
+    }
   }
 
   override def reset(): Unit = { this.currentPos = 0 }

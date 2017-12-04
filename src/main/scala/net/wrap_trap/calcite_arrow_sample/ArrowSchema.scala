@@ -45,7 +45,7 @@ class ArrowSchema(val directory: File) extends AbstractSchema {
         .foreach { f =>
           map.put(
             trim(f.getName(), ".arrow").toUpperCase,
-            new ArrowScannableTable(load(f.getAbsolutePath, allocator), null))
+            new ArrowTranslatableTable(load(f.getAbsolutePath, allocator), null))
         }
       tableMap = Option(map)
     }
