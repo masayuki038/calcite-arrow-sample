@@ -23,9 +23,9 @@ class ArrowTranslatableTable(val schemaRoots: Array[VectorSchemaRoot], val rowTy
     "ArrowTranslatableTable"
   }
 
-  def project(root: DataContext, fields: Array[Int]): Enumerable[Array[Object]] = {
-    new AbstractEnumerable[Array[Object]] {
-      override def enumerator(): Enumerator[Array[Object]] = {
+  def project(root: DataContext, fields: Array[Int]): Enumerable[Object] = {
+    new AbstractEnumerable[Object] {
+      override def enumerator(): Enumerator[Object] = {
         new ArrowEnumerator(schemaRoots, fields)
       }
     }

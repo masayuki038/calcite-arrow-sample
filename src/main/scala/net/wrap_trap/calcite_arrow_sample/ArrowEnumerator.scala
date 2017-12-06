@@ -29,7 +29,7 @@ object ArrowEnumerator {
   }
 }
 
-class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[Int]) extends Enumerator[Array[Object]] {
+class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[Int]) extends Enumerator[Object] {
   val logger = LoggerFactory.getLogger(classOf[ArrowEnumerator])
 
   var index = 0
@@ -39,10 +39,53 @@ class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[
     this(vectorSchemaRoots, EnumeratorUtils.identityList(vectorSchemaRoots(0).getFieldVectors.size))
   }
 
-//  logger.error("vectorSchemaRoots.length:" + vectorSchemaRoots.length)
-//  vectorSchemaRoots.foreach(v => {
-//    logger.error("vectorSchemaRoot: " + v)
-//  })
+  override def close(): Unit = {}
+
+  override def moveNext(): Boolean = {
+    if (this.currentPos < (this.vectorSchemaRoots(this.index).getRowCount - 1)) {
+      this.currentPos += 1
+      return true
+    } else if (this.index < (this.vectorSchemaRoots.length - 1)) {
+      this.index += 1
+      this.currentPos = 0
+      return true
+    }
+    false
+  }
+
+  override def current(): Object = {
+    if (fields.length == 1) {
+      return getObject(fields(0))
+    }
+
+    fields.map { fieldIndex =>
+      getObject(fieldIndex)
+    }
+  }
+
+  def getObject(fieldIndex: Int): Object = {
+    val fieldVector = vectorSchemaRoots(this.index).getFieldVectors.get(fieldIndex)
+    if (fieldVector.getAccessor.getValueCount <= this.currentPos) {
+      "NULL"
+    } else {
+      fieldVector.getAccessor.getObject(this.currentPos)
+    }
+  }
+
+  override def reset(): Unit = { this.currentPos = 0 }
+}
+
+
+class ArrowArrayEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[Int])
+  extends Enumerator[Array[Object]] {
+  val logger = LoggerFactory.getLogger(classOf[ArrowEnumerator])
+
+  var index = 0
+  var currentPos = 0
+
+  def this(vectorSchemaRoots: Array[VectorSchemaRoot]) = {
+    this(vectorSchemaRoots, EnumeratorUtils.identityList(vectorSchemaRoots(0).getFieldVectors.size))
+  }
 
   override def close(): Unit = {}
 
@@ -60,12 +103,11 @@ class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[
 
   override def current(): Array[Object] = {
     fields.map { fieldIndex =>
-      logger.error("fieldIndex: " + fieldIndex)
       val fieldVector = vectorSchemaRoots(this.index).getFieldVectors.get(fieldIndex)
-      if (fieldVector.getAccessor.getValueCount <= currentPos) {
+      if (fieldVector.getAccessor.getValueCount <= this.currentPos) {
         "NULL"
       } else {
-        fieldVector.getAccessor.getObject(currentPos)
+        fieldVector.getAccessor.getObject(this.currentPos)
       }
     }
   }

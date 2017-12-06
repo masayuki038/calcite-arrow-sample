@@ -20,7 +20,7 @@ class ArrowScannableTable(val schemaRoots: Array[VectorSchemaRoot], val rowType:
   override def scan(root: DataContext): Enumerable[Array[Object]] = {
     new AbstractEnumerable[Array[Object]] {
       override def enumerator(): Enumerator[Array[Object]] = {
-        new ArrowEnumerator(schemaRoots)
+        new ArrowArrayEnumerator(schemaRoots)
       }
     }
   }
