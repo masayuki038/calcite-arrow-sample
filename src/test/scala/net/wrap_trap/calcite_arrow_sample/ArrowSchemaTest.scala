@@ -1,10 +1,6 @@
 package net.wrap_trap.calcite_arrow_sample
 
-import collection.JavaConverters._
-
 import org.apache.arrow.memory.RootAllocator
-import org.apache.arrow.vector.FieldVector
-import org.apache.arrow.vector.VectorSchemaRoot
 import org.scalatest.{Matchers, FlatSpec}
 
 class ArrowSchemaTest extends FlatSpec with Matchers {
