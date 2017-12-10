@@ -55,11 +55,9 @@ class ArrowEnumerator(vectorSchemaRoots: Array[VectorSchemaRoot], fields: Array[
 
   override def current(): Object = {
     if (fields.length == 1) {
-      return getObject(fields(0))
-    }
-
-    fields.map { fieldIndex =>
-      getObject(fieldIndex)
+      getObject(fields(0))
+    } else {
+      fields.map(getObject(_))
     }
   }
 
